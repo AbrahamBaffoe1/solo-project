@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import useStore from '../../zustand/store';
+import './LoginPage.css'
 
 
 
@@ -48,7 +49,7 @@ function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">
+        <button type="submit" className="Submit-Button">
           Log In
         </button>
       </form>

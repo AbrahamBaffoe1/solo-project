@@ -1,55 +1,58 @@
 import { useState } from 'react';
-import useStore from '../../zustand/store'
 import DonorList from '../DonorList/DonorList';
 import Navbar from '../Navbar/NavBar';
 import DonorForm from '../DonorForm/DonorForm';
-
-
-
+import './HomePage.css';
 
 function HomePage() {
-  const user = useStore((state) => state.user);
-  const logOut = useStore((state) => state.logOut);
+  const [isopen, setIsOpen] = useState(false);
+  const [formMode, setFormMode] = useState('add');
+  const [selectedDonor, setSelectedDonor] = useState(null);
+  const [refreshList, setRefreshList] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [isopen, SetIsOpen] = useState(false);
-  const [FormMode, SetFormMode] = useState('add');
-
-  const handleopen = (mode) => {
-    SetIsOpen(true);
-    SetFormMode(mode);
+  const handleOpen = (mode, donor = null) => {
+    setFormMode(mode);
+    setSelectedDonor(donor);
+    setIsOpen(true);
   };
 
-  // const handleSubmit = () => {
-  //   if (FormMode === 'add') {
-  //     console.log('Form Mode added')
-  //   }
-  //   else {
-  //     console.log('Form Mode editable')
-  //   }
-  // }
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(FormMode === 'edit' ? 'Save Changes' : 'Add Donor');
-    SetIsOpen(false);
+  const handleClose = () => {
+    setIsOpen(false);
+    setSelectedDonor(null);
   };
 
+  const handleSubmit = async () => {
+    setRefreshList(prev => !prev);
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
 
   return (
-    <>
-
-      <Navbar onOpen={() => handleopen('add')} />
-      <DonorList  handleOpen={handleopen}/>
-      <DonorForm isopen= {isopen} OnSubmit={handleSubmit}
-      onClose= {() => SetIsOpen(false)}
-      FormMode={FormMode}
+    <div className="home-container">
+      <Navbar onOpen={() => handleOpen('add')} onSearch={handleSearch} />
+      
+      <div className="content-wrapper">
+        <div className="content-card">
+          <DonorList
+            handleOpen={handleOpen}
+            refreshTrigger={refreshList}
+            searchTerm={searchTerm}
+          />
+        </div>
+      </div>
+      
+      <DonorForm
+        isopen={isopen}
+        onClose={handleClose}
+        OnSubmit={handleSubmit}
+        FormMode={formMode}
+        initialData={selectedDonor}
       />
-      <button className="btn btn-error w-full absolute bottom-4 left-1/2 transform -translate-x-1/2" onClick={logOut}>
-        Log Out
-      </button>
-    </>
+    </div>
   );
 }
-
 
 export default HomePage;

@@ -1,0 +1,31 @@
+.register-container {
+    @apply flex flex-col items-center justify-center min-h-screen bg-base-200 p-4;
+  }
+  
+  .register-title {
+    @apply text-3xl font-bold mb-8 text-center;
+  }
+  
+  .register-form {
+    @apply bg-base-100 p-8 rounded-lg shadow-lg w-full max-w-md;
+  }
+  
+  .form-group {
+    @apply mb-4;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium mb-2;
+  }
+  
+  .form-input {
+    @apply input input-bordered w-full;
+  }
+  
+  .submit-button {
+    @apply btn btn-primary w-full mt-6;
+  }
+  
+  .error-message {
+    @apply mt-4 text-error text-center font-semibold;
+  }

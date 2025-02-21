@@ -1,79 +1,203 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import './DonorForm.css'
 
-function DonorForm({ isopen, onClose, FormMode, OnSubmit }) {
+function DonorForm({ isopen, onClose, FormMode, OnSubmit, initialData }) {
     const handleClose = () => {
         // Close the modal using the onClose callback from the parent
         onClose();
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault(); // Prevent default form submission behavior
-        OnSubmit(); // Call the OnSubmit function passed from the parent
-        handleClose(); // Closes the modal after submit
-    };
 
-    const [Name, setName] = useState('');
-    const [Amount, setAmount] = useState('');
-    const [Email, setEmail] = useState('');
-    const [Phone, setPhone] = useState('');
-    const [Address, setAddress] = useState('');
-    const [status, setStatus] = useState(false);
+    const [name, setName] = useState(initialData?.name || '');
+    const [amount, setAmount] = useState(initialData?.amount ? parseFloat(initialData.amount).toString() : '');
+    const [email, setEmail] = useState(initialData?.email || '');
+    const [phone, setPhone] = useState(initialData?.phone || '');
+    const [address, setAddress] = useState(initialData?.address || '');
+    const [Paid, setPaid] = useState(initialData?.Paid || false);
+    const [Donation_date, setDonationDate] = useState(initialData?.Donation_date || new Date().toISOString().split('T')[0]);
+
+
+    useEffect(() => {
+        if (initialData) {
+            setName(initialData.name || '');
+            setAmount(initialData.amount ? parseFloat(initialData.amount).toString() : '');
+            setEmail(initialData.email || '');
+            setPhone(initialData.phone || '');
+            setAddress(initialData.address || '');
+            setPaid(initialData.Paid || false);
+            setDonationDate(initialData.Donation_date || new Date().toISOString().split('T')[0]);
+        } else {
+            setName('');
+            setAmount('');
+            setEmail('');
+            setPhone('');
+            setAddress('');
+            setPaid(false);
+        }
+    }, [initialData]);
 
     const handleStatusChange = (e) => {
-        setStatus(e.target.value === 'Paid');
+        setPaid(e.target.value === 'Paid');
     }
 
-    
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
+
+        const donorData = {
+            name,
+            email,
+            phone,
+            address,
+            amount: parseFloat(amount || 0),
+            Paid,
+            Donation_date
+        };
+
+        try {
+            const url = FormMode === 'edit'
+                ? `/api/donation/donors/${initialData.donor_id}`
+                : '/api/donation/';
+
+            const response = await fetch(url, {
+                method: FormMode === 'edit' ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(donorData),
+            });
+
+            if (response.ok) {
+                if (OnSubmit) OnSubmit(); // Call the OnSubmit function if provided
+                handleClose(); // Closes the modal after submit
+            } else {
+                const errorData = await response.json();
+                alert(errorData.error || 'Failed to submit donor. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error submitting donor:', error);
+            alert('Network error occurred. Please check your connection and try again.');
+        }
+    };
+
+
+
 
     return (
-        <>
-            <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle" open={isopen}>
-                <div className="modal-box">
-                    <h3 className="font-bold text-lg py-4">
-                        {FormMode === 'edit' ? 'Edit Donor' : 'Donor Details'}</h3>
-                    <div className="modal-action">
-                        <form method="dialog" onSubmit={handleSubmit}>
+        <dialog id="my_modal_5" className="donor-form-modal" open={isopen}>
+            <button
+                className="modal-close-button"
+                onClick={onClose}
+                aria-label="Close modal"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
 
-                            <label className="input input-bordered mr-3 my-3 flex items-center gap-1">
-                                Name
-                                <input type="text" className="grow" value={Name} onChange={(e) => setName(e.target.value)}/>
-                            </label>
+            <div className="donor-form-box">
+                <h3 className="donor-form-title">
+                    {FormMode === 'edit' ? 'Edit Donor' : 'Add New Donor'}
+                </h3>
+                <div className="donor-form-content">
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-input-group">
+                            <label htmlFor="name">Name</label>
+                            <input
+                                id="name"
+                                type="text"
+                                className="form-input"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
 
-                            <label className="input input-bordered mr-4 my-3 flex items-center gap-1 ">
-                                Email 
-                                <input type="text" className="grow" value={Email} onChange={(e) => setEmail(e.target.value)} />
-                            </label>
+                        <div className="form-input-group wide">
+                            <label htmlFor="email">Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                className="form-input"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
 
-                            <label className="input  mr-3 my-3 flex items-center gap-2">
-                                Address
-                                <input type="text" className="grow" value={Address} onChange={(e) => setAddress(e.target.value)}/>
-                            </label>
+                        <div className="form-input-group wide">
+                            <label htmlFor="phone">Phone</label>
+                            <input
+                                id="phone"
+                                type="tel"
+                                className="form-input"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                            />
+                        </div>
 
-                            <div className="flex mb-4 justify-between">
-                                 <label className="input input-bordered mr-4 my-4 flex items-center gap-1">
-                                Amount
-                                <input type="number" className="grow"  value={Amount} onChange={(e) => setAmount(e.target.value)}/>
-                            </label>
-                            <select value={status ? 'Paid' : 'Not Paid'} className="select select-boarded w-full mr-4 my-4 max-w-xs" onChange={handleStatusChange}>
-                                <option>Paid</option>
-                                <option>Not Paid</option>
-                            </select>
+                        <div className="form-input-group">
+                            <label htmlFor="address">Address</label>
+                            <input
+                                id="address"
+                                type="text"
+                                className="form-input"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                required
+                            />
+                        </div>
 
+                        <div className="form-input-group wide">
+                            <label htmlFor="donation-date">Donation Date</label>
+                            <input
+                                id="donation-date"
+                                type="date"
+                                className="form-input"
+                                value={Donation_date}
+                                onChange={(e) => setDonationDate(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-select-group">
+                            <div className="amount-input">
+                                <label htmlFor="amount">Amount</label>
+                                <input
+                                    id="amount"
+                                    type="number"
+                                    className="form-input"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                />
                             </div>
+                            <div className="status-input">
+                                <label htmlFor="status">Status</label>
+                                <select
+                                    id="status"
+                                    value={Paid ? 'Paid' : 'Not Paid'}
+                                    className="status-select"
+                                    onChange={handleStatusChange}
+                                >
+                                    <option>Paid</option>
+                                    <option>Not Paid</option>
+                                </select>
+                            </div>
+                        </div>
 
-                            {/* if there is a button in form, it will close the modal */}
-                            <button className="btn btn-success" onClick={handleClose}>
-                                {FormMode === 'edit' ? 'Save Changes': ' Add a donor'}
-                            </button>
-                            {/* <button className="btn" onClick={handleClose}>Save Changes</button> */}
-                        </form>
-                    </div>
+                        <button type="submit" className="submit-button">
+                            {FormMode === 'edit' ? 'Save Changes' : ' Add a donor'}
+                        </button>
+                    </form>
                 </div>
-            </dialog>
-        </>
+            </div>
+        </dialog>
     )
-
 }
+
 
 
 export default DonorForm;

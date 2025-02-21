@@ -1,24 +1,35 @@
-function Navbar({onOpen}) {
-  return (
-    <>
-      <div className="navbar bg-base-100">
-  <div className="navbar-start">
-    
-    <a className="btn btn-ghost text-xl">Donors</a>
-  </div>
-  <div className="navbar-center hidden lg:flex">
+import './NavBar.css';
+import { useState } from 'react';
 
-  <div className="form-control">
-      <input type="text" placeholder="Search" className="input input-bordered w-24 md:w-auto" />
+function Navbar({onOpen, onSearch}) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
+  return (
+    <div className="navbar-container">
+      <div className="navbar-center-section">
+        <div className="search-control">
+          <input 
+            type="text" 
+            placeholder="Search donors" 
+            className="search-input"
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+        </div>
+      </div>
+      <div className="navbar-end-section">
+        <button className="add-donor-button" onClick={onOpen}>Add New</button>
+      </div>
     </div>
-    
-  </div>
-  <div className="navbar-end">
-    <a className="btn btn-primary" onClick={onOpen}>Add a Donor</a>
-  </div>
-</div>
-    </>
-  )
+  );
 }
 
 export default Navbar;
